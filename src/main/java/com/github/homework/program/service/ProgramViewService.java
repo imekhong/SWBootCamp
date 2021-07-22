@@ -25,7 +25,8 @@ public class ProgramViewService {
                         program.getName(),
                         program.getIntroduction(),
                         program.getIntroductionDetail(),
-                        program.getRegion()
+                        program.getRegion(),
+                        program.getTheme().getName()
                 )
         );
     }

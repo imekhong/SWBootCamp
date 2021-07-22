@@ -64,6 +64,7 @@ public class ProgramControllerTest extends BaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..id").isNotEmpty())
                 .andExpect(jsonPath("$..name").value("여수 10미 먹거리"))
+                .andExpect(jsonPath("$..themeName").value("식도락여행"))
                 .andExpect(jsonPath("totalPages").value("1"))
                 .andExpect(jsonPath("totalElements").value("1"));
     }
