@@ -40,7 +40,7 @@ class ProgramViewServiceTest {
                 .introduction("introduction")
                 .introductionDetail("introductionDetail")
                 .region("region")
-                .theme(new Theme("theme"))
+                .theme(new Theme("themeName"))
                 .build();
 
         given(programRepository.findById(1L)).willReturn(Optional.of(program));
@@ -52,6 +52,7 @@ class ProgramViewServiceTest {
                     then(programViewDto.getIntroduction()).isEqualTo("introduction");
                     then(programViewDto.getIntroductionDetail()).isEqualTo("introductionDetail");
                     then(programViewDto.getRegion()).isEqualTo("region");
+                    then(programViewDto.getThemeName()).isEqualTo("themeName");
                 }
         );
 
