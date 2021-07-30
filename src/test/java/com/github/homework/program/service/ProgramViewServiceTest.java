@@ -59,6 +59,32 @@ class ProgramViewServiceTest {
     }
 
     @Test
+    @DisplayName("프로그램이 한개이고 이름으로 검색 일때")
+    void getByNameTest() {
+        //given
+        Program program = Program.builder()
+                .name("name")
+                .introduction("introduction")
+                .introductionDetail("introductionDetail")
+                .region("region")
+                .theme(new Theme("themeName"))
+                .build();
+
+        given(programRepository.findByName("name")).willReturn(Optional.of(program));
+        //when
+        Optional<ProgramViewDetailDto> optionalProgramViewDto = programViewService.getByName("name");
+        //then
+        then(optionalProgramViewDto).hasValueSatisfying(programViewDto -> {
+                    then(programViewDto.getName()).isEqualTo("name");
+                    then(programViewDto.getIntroduction()).isEqualTo("introduction");
+                    then(programViewDto.getIntroductionDetail()).isEqualTo("introductionDetail");
+                    then(programViewDto.getRegion()).isEqualTo("region");
+                    then(programViewDto.getThemeName()).isEqualTo("themeName");
+                }
+        );
+    }
+
+    @Test
     @DisplayName("프로그램이 여러개 일때")
     void pageByTest() {
         //given
