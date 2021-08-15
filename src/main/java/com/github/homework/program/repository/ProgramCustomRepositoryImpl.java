@@ -3,7 +3,7 @@ package com.github.homework.program.repository;
 
 import com.github.homework.program.domain.Program;
 import com.github.homework.program.model.ProgramViewDto;
-import com.querydsl.core.types.Projections;
+import com.github.homework.program.model.QProgramViewDto;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,16 +20,16 @@ public class ProgramCustomRepositoryImpl extends QuerydslRepositorySupport imple
     public ProgramCustomRepositoryImpl() {
         super(Program.class);
     }
-
     @Override
     public Page<ProgramViewDto> findBy(Pageable pageable) {
         JPQLQuery<ProgramViewDto> query = Objects.requireNonNull(getQuerydsl())
                 .applyPagination(pageable, from(program)
                         .innerJoin(program.theme, theme)
-                ).select(Projections.constructor(ProgramViewDto.class,
+                ).select(new QProgramViewDto(
                         program.id,
                         program.name,
-                        theme.name
+                        program.theme.name,
+                        program.count
                 ));
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);

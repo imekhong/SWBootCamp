@@ -3,6 +3,7 @@ package com.github.homework.program.domain;
 
 import com.github.homework.theme.domain.Theme;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 
@@ -27,9 +28,12 @@ public class Program {
     private String region;
     @Column(name = "introduction_detail", nullable = false)
     private String introductionDetail;
+    @Column(name = "count", nullable = false)
+    @ColumnDefault("0")
+    private Long count = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "theme_id")
+    @JoinColumn(name = "theme_id", foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Theme theme;
 
     @Builder
@@ -48,6 +52,10 @@ public class Program {
         this.introductionDetail = introductionDetail;
         this.region = region;
         this.theme = theme;
+    }
+
+    public void increaseCount(){
+        this.count++;
     }
 
 }

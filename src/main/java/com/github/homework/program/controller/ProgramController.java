@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -39,10 +40,16 @@ public class ProgramController {
         return programViewDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<ProgramViewDetailDto> getByName(@PathVariable String name) {
+    @GetMapping("/name")
+    public ResponseEntity<ProgramViewDetailDto> getByNameParam(@RequestParam String name) {
         Optional<ProgramViewDetailDto> programViewDto = this.programViewService.getByName(name);
         return programViewDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/tops")
+    public ResponseEntity<List<ProgramViewDto>> topBy() {
+        List<ProgramViewDto> programViewDtos = this.programViewService.topBy();
+        return ResponseEntity.ok(programViewDtos);
     }
 
     @PostMapping

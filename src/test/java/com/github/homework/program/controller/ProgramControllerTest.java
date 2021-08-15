@@ -1,29 +1,25 @@
 package com.github.homework.program.controller;
 
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.github.homework.common.BaseControllerTest;
 import com.github.homework.program.domain.Program;
 import com.github.homework.program.model.ProgramSaveDto;
 import com.github.homework.program.repository.ProgramRepository;
 import com.github.homework.theme.domain.Theme;
 import com.github.homework.theme.repository.ThemeRepository;
-
-import java.util.Set;
-import java.util.stream.IntStream;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import java.util.stream.IntStream;
+
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class ProgramControllerTest extends BaseControllerTest {
     @Autowired
@@ -59,10 +55,10 @@ public class ProgramControllerTest extends BaseControllerTest {
     }
 
     @Test
-    @DisplayName("프로그램 단건 이름으로 조회")
-    public void getProgramByNameTest() throws Exception {
+    @DisplayName("프로그램 이름으로 조회")
+    public void getProgramNameTest() throws Exception {
         Program program = givenProgram(givenTheme("식도락여행"));
-        this.mockMvc.perform(get("/api/programs/name/{name}", program.getName()))
+        this.mockMvc.perform(get("/api/programs/name").param("name", program.getName()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").isNumber())
                 .andExpect(jsonPath("name").value("여수 10미 먹거리"))
@@ -71,17 +67,10 @@ public class ProgramControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("region").value("전라남도 여수시"))
                 .andExpect(jsonPath("themeName").value("식도락여행"))
                 .andDo(write.document(
-                        pathParameters(
-                                parameterWithName("name").description("name")
+                        requestParameters(
+                                parameterWithName("name").description("프로그램 이름")
                         )
                 ));
-    }
-
-    @Test
-    @DisplayName("프로그램 단건 이름으로 조회 결과 없음")
-    public void getProgramByNameFailTest() throws Exception {
-        this.mockMvc.perform(get("/api/programs/name/{name}", "여수 10미 먹거리"))
-                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -96,6 +85,31 @@ public class ProgramControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("totalPages").value("1"))
                 .andExpect(jsonPath("totalElements").value("1"));
     }
+
+    @Test
+    @DisplayName("프로그램 조회수 상위 10건 조회")
+    public void topByTest() throws Exception {
+        IntStream.range(0, 20).forEach(i -> {
+                    Theme theme = themeRepository.save(new Theme("theme" + i));
+                    Program program = Program.builder()
+                            .name("name")
+                            .introduction("introduction")
+                            .introductionDetail("introductionDetail")
+                            .region("region")
+                            .theme(theme)
+                            .build();
+                    IntStream.range(i, 20).forEach(j -> program.increaseCount());
+                    programRepository.save(program);
+                }
+        );
+        this.mockMvc.perform(get("/api/programs/tops"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("[0].id").isNotEmpty())
+                .andExpect(jsonPath("[0].name").value("name"))
+                .andExpect(jsonPath("[0].themeName").value("theme0"))
+                .andExpect(jsonPath("[0].count").value(20));
+    }
+
 
     @Test
     @DisplayName("프로그램 저장 정상 케이스")

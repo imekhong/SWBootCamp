@@ -58,4 +58,30 @@ class ProgramRepositoryTest {
             }
         );
     }
+    @Test
+    @DisplayName("프로그램 조회수가 상위 10건 테스트")
+    public void findTop10ByOrderByCountDescTest() {
+        //given
+        IntStream.range(0, 20).forEach(i -> {
+                    Program program = Program.builder()
+                            .name("name")
+                            .introduction("introduction")
+                            .introductionDetail("introductionDetail")
+                            .region("region")
+                            .theme(new Theme("theme" + i))
+                            .build();
+                    IntStream.range(i, 20).forEach(j-> program.increaseCount());
+                    testEntityManager.persist(program);
+                    testEntityManager.flush();
+                    testEntityManager.clear();
+                }
+        );
+
+        //when
+        List<Program> programs = programRepository.findTop10ByOrderByCountDesc();
+        //then
+        then(programs).hasSize(10);
+        then(programs.get(0).getCount()).isEqualTo(20);
+        then(programs.get(1).getCount()).isEqualTo(19);
+    }
 }

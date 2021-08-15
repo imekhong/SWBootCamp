@@ -1,5 +1,6 @@
 package com.github.homework.program.service;
 
+import com.github.homework.program.domain.Program;
 import com.github.homework.program.model.ProgramViewDetailDto;
 import com.github.homework.program.model.ProgramViewDto;
 import com.github.homework.program.repository.ProgramRepository;
@@ -9,7 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,30 +20,22 @@ import java.util.Optional;
 public class ProgramViewService {
 
     private final ProgramRepository programRepository;
-
+    @Transactional
     public Optional<ProgramViewDetailDto> getBy(Long id) {
-        return programRepository.findById(id).map(program ->
-                new ProgramViewDetailDto(
-                        program.getId(),
-                        program.getName(),
-                        program.getIntroduction(),
-                        program.getIntroductionDetail(),
-                        program.getRegion(),
-                        program.getTheme().getName()
-                )
-        );
+        Optional<Program> byId = programRepository.findById(id);
+        byId.ifPresent(Program::increaseCount);
+        return byId.map(this::convertProgramViewDetailDto);
     }
 
-    public Optional<ProgramViewDetailDto> getByName(String name) {
-        return programRepository.findByName(name).map(program ->
-                new ProgramViewDetailDto(
-                        program.getId(),
-                        program.getName(),
-                        program.getIntroduction(),
-                        program.getIntroductionDetail(),
-                        program.getRegion(),
-                        program.getTheme().getName()
-                )
+    private ProgramViewDetailDto convertProgramViewDetailDto(Program program) {
+        return new ProgramViewDetailDto(
+                program.getId(),
+                program.getName(),
+                program.getIntroduction(),
+                program.getIntroductionDetail(),
+                program.getRegion(),
+                program.getTheme().getName(),
+                program.getCount()
         );
     }
 
@@ -48,4 +43,18 @@ public class ProgramViewService {
         return programRepository.findBy(pageable);
     }
 
+    public Optional<ProgramViewDetailDto> getByName(String name) {
+        return programRepository.findByName(name).map(this::convertProgramViewDetailDto);
+    }
+
+    public List<ProgramViewDto> topBy() {
+        return programRepository.findTop10ByOrderByCountDesc().stream().map(program ->
+                new ProgramViewDto(
+                        program.getId(),
+                        program.getName(),
+                        program.getTheme().getName(),
+                        program.getCount()
+                )
+        ).collect(Collectors.toUnmodifiableList());
+    }
 }
